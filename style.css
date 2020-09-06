@@ -22,6 +22,8 @@ body {
   height: 100%;
 }
 
+
+
 canvas {
   outline: 1px solid white;
   max-width: 100%;
@@ -29,3 +31,4 @@ canvas {
   width: auto;
   height: auto;
 }
+
