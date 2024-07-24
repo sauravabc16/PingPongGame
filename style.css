@@ -31,3 +31,9 @@ canvas {
 .score {
   font-size: 20px;
 }
+
+.instructions {
+  margin-top: 10px;
+  font-size: 16px;
+  text-align: center;
+}

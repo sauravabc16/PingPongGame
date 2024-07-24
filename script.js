@@ -1,53 +1,41 @@
-/* Variable index:
-a -> left player score
-b -> right player score
-c -> context
-e -> event
-i -> counter for dashed line
-k -> keycode
-m -> left paddle y
-n -> right paddle y
-p -> left paddle y velocity
-q -> right paddle y velocity
-s -> is start of game
-u -> ball x velocity
-v -> ball y velocity
-w -> game is waiting (paused)
-x -> ball x
-y -> ball y
-*/
-
-
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
+// Ball properties
 let ballRadius = 10;
 let x = canvas.width / 2;
 let y = canvas.height - 30;
-let dx = 2; // Reduced ball speed
-let dy = 2;
+let dx = 2; // Ball speed on x-axis
+let dy = 2; // Ball speed on y-axis
 
+// Paddle properties
 let paddleHeight = 75;
 let paddleWidth = 10;
 let paddleYRight = (canvas.height - paddleHeight) / 2;
 let paddleYLeft = (canvas.height - paddleHeight) / 2;
 
-const paddleSpeed = 5; // Reduced paddle speed
-const upArrowPressed = false;
-const downArrowPressed = false;
-const wKeyPressed = false;
-const sKeyPressed = false;
+// Paddle movement speed
+const paddleSpeed = 5;
 
+// Key press states
+let upArrowPressed = false;
+let downArrowPressed = false;
+let wKeyPressed = false;
+let sKeyPressed = false;
+
+// Scoring
 let leftScore = 0;
 let rightScore = 0;
 
+// Event listeners for key presses
 document.addEventListener("keydown", keyDownHandler);
 document.addEventListener("keyup", keyUpHandler);
 
+// Handle key down events
 function keyDownHandler(e) {
-    if (e.key == "Up" || e.key == "ArrowUp") {
+    if (e.key == "ArrowUp") {
         upArrowPressed = true;
-    } else if (e.key == "Down" || e.key == "ArrowDown") {
+    } else if (e.key == "ArrowDown") {
         downArrowPressed = true;
     } else if (e.key == "w" || e.key == "W") {
         wKeyPressed = true;
@@ -56,10 +44,11 @@ function keyDownHandler(e) {
     }
 }
 
+// Handle key up events
 function keyUpHandler(e) {
-    if (e.key == "Up" || e.key == "ArrowUp") {
+    if (e.key == "ArrowUp") {
         upArrowPressed = false;
-    } else if (e.key == "Down" || e.key == "ArrowDown") {
+    } else if (e.key == "ArrowDown") {
         downArrowPressed = false;
     } else if (e.key == "w" || e.key == "W") {
         wKeyPressed = false;
@@ -68,6 +57,7 @@ function keyUpHandler(e) {
     }
 }
 
+// Draw the ball on the canvas
 function drawBall() {
     ctx.beginPath();
     ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
@@ -76,6 +66,7 @@ function drawBall() {
     ctx.closePath();
 }
 
+// Draw the right paddle
 function drawPaddleRight() {
     ctx.beginPath();
     ctx.rect(canvas.width - paddleWidth, paddleYRight, paddleWidth, paddleHeight);
@@ -84,6 +75,7 @@ function drawPaddleRight() {
     ctx.closePath();
 }
 
+// Draw the left paddle
 function drawPaddleLeft() {
     ctx.beginPath();
     ctx.rect(0, paddleYLeft, paddleWidth, paddleHeight);
@@ -92,13 +84,15 @@ function drawPaddleLeft() {
     ctx.closePath();
 }
 
+// Main draw function to render the game
 function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawBall();
-    drawPaddleRight();
-    drawPaddleLeft();
-    drawScore();
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+    drawBall(); // Draw the ball
+    drawPaddleRight(); // Draw the right paddle
+    drawPaddleLeft(); // Draw the left paddle
+    drawScore(); // Display the score
 
+    // Ball collision with walls
     if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
         dx = -dx;
     }
@@ -107,38 +101,42 @@ function draw() {
         dy = -dy;
     }
 
+    // Ball collision with paddles
     if (x + dx > canvas.width - paddleWidth - ballRadius) {
         if (y > paddleYRight && y < paddleYRight + paddleHeight) {
             dx = -dx;
         } else {
-            leftScore++;
-            resetBall();
+            leftScore++; // Increment left player's score
+            resetBall(); // Reset the ball
         }
     } else if (x + dx < paddleWidth + ballRadius) {
         if (y > paddleYLeft && y < paddleYLeft + paddleHeight) {
             dx = -dx;
         } else {
-            rightScore++;
-            resetBall();
+            rightScore++; // Increment right player's score
+            resetBall(); // Reset the ball
         }
     }
 
+    // Move right paddle
     if (upArrowPressed && paddleYRight > 0) {
         paddleYRight -= paddleSpeed;
     } else if (downArrowPressed && paddleYRight < canvas.height - paddleHeight) {
         paddleYRight += paddleSpeed;
     }
 
+    // Move left paddle
     if (wKeyPressed && paddleYLeft > 0) {
         paddleYLeft -= paddleSpeed;
     } else if (sKeyPressed && paddleYLeft < canvas.height - paddleHeight) {
         paddleYLeft += paddleSpeed;
     }
 
-    x += dx;
-    y += dy;
+    x += dx; // Update ball position on x-axis
+    y += dy; // Update ball position on y-axis
 }
 
+// Draw the score on the canvas
 function drawScore() {
     ctx.font = "16px Arial";
     ctx.fillStyle = "#0095DD";
@@ -146,6 +144,7 @@ function drawScore() {
     ctx.fillText("Right: " + rightScore, canvas.width - 65, 20);
 }
 
+// Reset the ball to the center and reset its speed
 function resetBall() {
     x = canvas.width / 2;
     y = canvas.height / 2;
@@ -153,7 +152,5 @@ function resetBall() {
     dy = 2;
 }
 
+// Call the draw function every 10 milliseconds
 setInterval(draw, 10);
-
-
-
