@@ -18,32 +18,142 @@ y -> ball y
 */
 
 
-c=document.getElementById('c').getContext('2d')
-c.fillStyle="#FFF"
-c.font="60px monospace"
-w=s=1
-p=q=a=b=0
-m=n=190
-x=300;y=235
-u=-5;v=3
-setInterval(function(){if(w&&!s)return;s=0
-c.clearRect(0,0,640,480)
-for(i=5;i<480;i+=20)c.fillRect(318,i,4,10)
-m+=p;n+=q
-m=m<0?0:m;m=m>380?380:m
-n=n<0?0:n;n=n>380?380:n
-x+=u;y+=v
-if(y<=0){y=0;v=-v}
-if(y>=470){y=470;v=-v}
-if(x<=40&&x>=20&&y<m+110&&y>m-10){u=-u+0.2;v+=(y-m-45)/20}
-if(x<=610&&x>=590&&y<n+110&&y>n-10){u=-u-0.2;v+=(y-n-45)/20}
-if(x<-10){b++;x=360;y=235;u=5;w=1}
-if(x>640){a++;x=280;y=235;u=-5;w=1}
-c.fillText(a+" "+b,266,60)
-c.fillRect(20,m,20,100)
-c.fillRect(600,n,20,100)
-c.fillRect(x,y,10,10)},30)
-document.onkeydown=function(e){k=(e||window.event).keyCode;w=w?0:k=='27'?1:0;p=k=='65'?5:k=='81'?-5:p;q=k=='40'?5:k=='38'?-5:q;}
-document.onkeyup=function(e){k=(e||window.event).keyCode;p=k=='65'||k=='81'?0:p;q=k=='38'||k=='40'?0:q}
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+let ballRadius = 10;
+let x = canvas.width / 2;
+let y = canvas.height - 30;
+let dx = 2; // Reduced ball speed
+let dy = 2;
+
+let paddleHeight = 75;
+let paddleWidth = 10;
+let paddleYRight = (canvas.height - paddleHeight) / 2;
+let paddleYLeft = (canvas.height - paddleHeight) / 2;
+
+const paddleSpeed = 5; // Reduced paddle speed
+const upArrowPressed = false;
+const downArrowPressed = false;
+const wKeyPressed = false;
+const sKeyPressed = false;
+
+let leftScore = 0;
+let rightScore = 0;
+
+document.addEventListener("keydown", keyDownHandler);
+document.addEventListener("keyup", keyUpHandler);
+
+function keyDownHandler(e) {
+    if (e.key == "Up" || e.key == "ArrowUp") {
+        upArrowPressed = true;
+    } else if (e.key == "Down" || e.key == "ArrowDown") {
+        downArrowPressed = true;
+    } else if (e.key == "w" || e.key == "W") {
+        wKeyPressed = true;
+    } else if (e.key == "s" || e.key == "S") {
+        sKeyPressed = true;
+    }
+}
+
+function keyUpHandler(e) {
+    if (e.key == "Up" || e.key == "ArrowUp") {
+        upArrowPressed = false;
+    } else if (e.key == "Down" || e.key == "ArrowDown") {
+        downArrowPressed = false;
+    } else if (e.key == "w" || e.key == "W") {
+        wKeyPressed = false;
+    } else if (e.key == "s" || e.key == "S") {
+        sKeyPressed = false;
+    }
+}
+
+function drawBall() {
+    ctx.beginPath();
+    ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
+    ctx.fillStyle = "#0095DD";
+    ctx.fill();
+    ctx.closePath();
+}
+
+function drawPaddleRight() {
+    ctx.beginPath();
+    ctx.rect(canvas.width - paddleWidth, paddleYRight, paddleWidth, paddleHeight);
+    ctx.fillStyle = "#0095DD";
+    ctx.fill();
+    ctx.closePath();
+}
+
+function drawPaddleLeft() {
+    ctx.beginPath();
+    ctx.rect(0, paddleYLeft, paddleWidth, paddleHeight);
+    ctx.fillStyle = "#0095DD";
+    ctx.fill();
+    ctx.closePath();
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBall();
+    drawPaddleRight();
+    drawPaddleLeft();
+    drawScore();
+
+    if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
+        dx = -dx;
+    }
+
+    if (y + dy > canvas.height - ballRadius || y + dy < ballRadius) {
+        dy = -dy;
+    }
+
+    if (x + dx > canvas.width - paddleWidth - ballRadius) {
+        if (y > paddleYRight && y < paddleYRight + paddleHeight) {
+            dx = -dx;
+        } else {
+            leftScore++;
+            resetBall();
+        }
+    } else if (x + dx < paddleWidth + ballRadius) {
+        if (y > paddleYLeft && y < paddleYLeft + paddleHeight) {
+            dx = -dx;
+        } else {
+            rightScore++;
+            resetBall();
+        }
+    }
+
+    if (upArrowPressed && paddleYRight > 0) {
+        paddleYRight -= paddleSpeed;
+    } else if (downArrowPressed && paddleYRight < canvas.height - paddleHeight) {
+        paddleYRight += paddleSpeed;
+    }
+
+    if (wKeyPressed && paddleYLeft > 0) {
+        paddleYLeft -= paddleSpeed;
+    } else if (sKeyPressed && paddleYLeft < canvas.height - paddleHeight) {
+        paddleYLeft += paddleSpeed;
+    }
+
+    x += dx;
+    y += dy;
+}
+
+function drawScore() {
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "#0095DD";
+    ctx.fillText("Left: " + leftScore, 8, 20);
+    ctx.fillText("Right: " + rightScore, canvas.width - 65, 20);
+}
+
+function resetBall() {
+    x = canvas.width / 2;
+    y = canvas.height / 2;
+    dx = 2;
+    dy = 2;
+}
+
+setInterval(draw, 10);
+
 
 
