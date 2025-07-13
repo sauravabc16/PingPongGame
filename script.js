@@ -1,12 +1,18 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
+// DOM elements for score animation and display
+const leftScoreEl = document.getElementById("leftScore");
+const rightScoreEl = document.getElementById("rightScore");
+const scoreAnimationEl = document.getElementById("scoreAnimation");
+
 // Ball properties
 let ballRadius = 10;
 let x = canvas.width / 2;
 let y = canvas.height - 30;
 let dx = 2; // Ball speed on x-axis
 let dy = 2; // Ball speed on y-axis
+let hue = 0; // Used for ball color animation
 
 // Paddle properties
 let paddleHeight = 75;
@@ -26,6 +32,29 @@ let sKeyPressed = false;
 // Scoring
 let leftScore = 0;
 let rightScore = 0;
+
+// Initial score display
+updateScoreDisplay();
+
+// Update score display and trigger animations
+function updateScoreDisplay() {
+    leftScoreEl.textContent = "Left: " + leftScore;
+    rightScoreEl.textContent = "Right: " + rightScore;
+    leftScoreEl.classList.add("score-update");
+    rightScoreEl.classList.add("score-update");
+    setTimeout(() => {
+        leftScoreEl.classList.remove("score-update");
+        rightScoreEl.classList.remove("score-update");
+    }, 500);
+}
+
+// Show temporary score animation in the center
+function showScoreAnimation(text) {
+    scoreAnimationEl.textContent = text;
+    scoreAnimationEl.classList.remove("show");
+    void scoreAnimationEl.offsetWidth; // Restart animation
+    scoreAnimationEl.classList.add("show");
+}
 
 // Event listeners for key presses
 document.addEventListener("keydown", keyDownHandler);
@@ -57,11 +86,18 @@ function keyUpHandler(e) {
     }
 }
 
+// Slowly increase ball speed over time
+function increaseBallSpeed() {
+    const factor = 1.0005; // very slow increase
+    dx *= factor;
+    dy *= factor;
+}
+
 // Draw the ball on the canvas
 function drawBall() {
     ctx.beginPath();
     ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
-    ctx.fillStyle = "#0095DD";
+    ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
     ctx.fill();
     ctx.closePath();
 }
@@ -87,6 +123,7 @@ function drawPaddleLeft() {
 // Main draw function to render the game
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+    hue = (hue + 1) % 360; // Update ball color
     drawBall(); // Draw the ball
     drawPaddleRight(); // Draw the right paddle
     drawPaddleLeft(); // Draw the left paddle
@@ -107,6 +144,8 @@ function draw() {
             dx = -dx;
         } else {
             leftScore++; // Increment left player's score
+            updateScoreDisplay();
+            showScoreAnimation(`Left Scores! ${leftScore} - ${rightScore}`);
             resetBall(); // Reset the ball
         }
     } else if (x + dx < paddleWidth + ballRadius) {
@@ -114,6 +153,8 @@ function draw() {
             dx = -dx;
         } else {
             rightScore++; // Increment right player's score
+            updateScoreDisplay();
+            showScoreAnimation(`Right Scores! ${leftScore} - ${rightScore}`);
             resetBall(); // Reset the ball
         }
     }
@@ -134,6 +175,9 @@ function draw() {
 
     x += dx; // Update ball position on x-axis
     y += dy; // Update ball position on y-axis
+
+    // Gradually increase ball speed
+    increaseBallSpeed();
 }
 
 // Draw the score on the canvas
